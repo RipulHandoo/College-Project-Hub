@@ -8,7 +8,7 @@ const login = require("../user/login")
 const logout = require("../user/logout")
 const authentication = require("../middleware/auth")
 
-router.post('/singup',singUp)
+router.post('/register',singUp)
 router.post("/user/login",login)
 router.post("/user/logout",logout)
 // router.get("/profile",authentication,(req,res)=>{
