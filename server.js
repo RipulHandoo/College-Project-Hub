@@ -7,9 +7,9 @@ const authRoutes = require('./routes/auth');
 const uploadRoutes = require('./routes/uploads');
 
 app.use(express.json())
-app.use('/v1/api', userRoutes)
-app.use('/v1/api', authRoutes)
-app.use('/v1/api', uploadRoutes)
+app.use('/', userRoutes)
+app.use('/', authRoutes)
+app.use('/', uploadRoutes)
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)

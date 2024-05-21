@@ -11,20 +11,26 @@ const s3Client = new S3Client({
 
 async function deleteObjectCommand(req,res,path){
     try{
-        const command = new DeleteObjectsCommand({
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Delete: {
-                Objects: [
-                    {
-                        Key: `${path}`
-                    }
-                ]
-            }
-        });
-
-        const response = await s3Client.send(command);
-        console.log(response);
-        return response;
+        const authToken = req.body.userID;
+        if(authToken != path.split("/")[0]){
+            return "Unauthorized";
+        }
+        else{
+            const command = new DeleteObjectsCommand({
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Delete: {
+                    Objects: [
+                        {
+                            Key: `${path}`
+                        }
+                    ]
+                }
+            });
+    
+            const response = await s3Client.send(command);
+            console.log(response);
+            return response;
+        }
     }
     catch(error){
         console.error("Error deleting file: ",error);

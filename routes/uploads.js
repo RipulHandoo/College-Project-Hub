@@ -1,6 +1,5 @@
 const express = require("express")
 const multer = require("multer")
-const authentication = require("../middleware/auth")
 const router = express.Router()
 const PutObject = require("../s3Service/putObject")
 const listObject = require("../s3Service/listUserObjects")
@@ -8,10 +7,26 @@ const createRepo = require("../s3Service/createRepo")
 const ListObjects = require("../s3Service/listObjects")
 const getObject = require("../s3Service/getObject")
 const deleteObjectCommand = require("../s3Service/deleteObject")
-
+const search = require("../s3Service/search")
 
 const storage = multer.memoryStorage()
 const uploads = multer({storage: storage, limits: {fileSize: 20000000000}})
+
+router.get("/search", async(req,res) => {
+  try{
+    const response = await search(req,res);
+    // res.status(200).json({
+    //   message: "Files listed successfully",
+    //   response: response
+    // });
+  }
+  catch(error){
+    console.error("Error listing files:", error);
+    res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+})
 
 // This route is used to put objects to the AWS S3 Bucket
 router.post("/:username/:repository/uploads/", uploads.array("files", 2), async (req, res) => {
@@ -80,10 +95,6 @@ router.get("/:username/", async(req,res) => {
 router.post("/createRepo", async(req,res) => {
   try{
     const response = await createRepo(req,res);
-    res.status(200).json({
-      message: "Repository created successfully",
-      response: response
-    });
   }
   catch(error){
     console.error("Error creating repository:", error);
@@ -141,7 +152,7 @@ router.get("/:username/:repository/*", async (req, res) => {
       } else {
           // Handle the case where the last part is a directory
           // You can implement logic to list directory contents or perform directory-related operations.
-         const response = await listObject(req,res,`${username}/${repositoryName}`);
+         const response = await ListObjects(req,res,`${username}/${repositoryName}`);
 
          res.status(200).json({
           message: "Files listed successfully",

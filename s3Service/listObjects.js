@@ -1,6 +1,6 @@
-const { ListObjectsCommand, S3Client } = require("@aws-sdk/client-s3")
+const { ListObjectsCommand, S3Client, HeadObjectCommand } = require("@aws-sdk/client-s3");
 
-require("dotenv").config()
+require("dotenv").config();
 
 const s3Client = new S3Client({
     credentials: {
@@ -9,18 +9,42 @@ const s3Client = new S3Client({
     }
 });
 
-async function ListObjects(req,res,path){
-    try{
-        const command = new ListObjectsCommand({
+async function ListObjects(req, res, path) {
+    try {
+        const listCommand = new ListObjectsCommand({
             Bucket: process.env.AWS_BUCKET_NAME,
             Prefix: `${path}/`
         });
-        const response = await s3Client.send(command);
-        console.log(response);
-       return response;
-    }
-    catch(error){
+
+        const response = await s3Client.send(listCommand);
+        const objects = response.Contents;
+
+        const repoList = [];
+
+        for (const object of objects) {
+            const key = object.Key;
+            const metadataCommand = new HeadObjectCommand({
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Key: key
+            });
+            const metadataResponse = await s3Client.send(metadataCommand);
+            const status = metadataResponse.Metadata.status;
+            const repoName = key.split('/')[1]; // Extracting repo name from key
+            const owner = key.split('/')[0]; // Extracting owner name from key
+
+            // Check if the requesting user is the owner
+            const isOwner = req.body.userID === owner;
+
+            // If the requesting user is the owner or the repository is public, add to repoList
+            if (isOwner || status !== "private") {
+                repoList.push(repoName);
+            }
+        }
+
+        return repoList;
+    } catch (error) {
         console.error("Error listing files:", error);
+        return [];
     }
 }
 

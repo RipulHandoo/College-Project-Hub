@@ -11,8 +11,8 @@ const authentication = require("../middleware/auth")
 router.post('/register',singUp)
 router.post("/user/login",login)
 router.post("/user/logout",logout)
-// router.get("/profile",authentication,(req,res)=>{
-//     res.send(req.user)
-// });
-
+router.get("/profile",authentication,(req,res)=>{
+    res.send(req.user)
+});
+ 
 module.exports = router
